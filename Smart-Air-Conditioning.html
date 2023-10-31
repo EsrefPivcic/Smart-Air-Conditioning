@@ -1,0 +1,148 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="30" />
+    <title>Smart-Air-Conditioning</title>
+  </head>
+  <body>
+    <button id="ON">AUTO - ON</button>
+    <button id="OFF">AUTO - OFF</button>
+    <br />
+    <br />
+    <label>Nivo osvjetljenja</label>
+    <div class="slidecontainer">
+      <input
+        type="range"
+        min="0"
+        max="255"
+        value="0"
+        class="slider"
+        id="nivosvjetlosti"
+      />
+    </div>
+    <br />
+    <label>Granica</label>
+    <div class="slidecontainer">
+      <input
+        type="range"
+        min="0"
+        max="1024"
+        value="0"
+        class="slider"
+        id="granica"
+      />
+      <label id="granicalabel"></label>
+    </div>
+    <br />
+    <br />
+    <label id="label">Trenutna vrijednost senzora:</label>
+    <label id="trenutno"></label>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyDzU0Ndmefis6IOULmc43RPubieEAdgQ9U",
+        authDomain: "nodemcu-9a843.firebaseapp.com",
+        databaseURL:
+          "https://nodemcu-9a843-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "nodemcu-9a843",
+        storageBucket: "nodemcu-9a843.appspot.com",
+        messagingSenderId: "240790843306",
+        appId: "1:240790843306:web:7433d2b47b9bb61e25c5d3",
+      };
+      const app = initializeApp(firebaseConfig);
+      import {
+        getDatabase,
+        ref,
+        child,
+        update,
+        set,
+        get,
+      } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+      const db = getDatabase();
+
+      var vrijednost = document.getElementById("vrijednost");
+      const dugme = document.getElementById("ON");
+      const dugme2 = document.getElementById("OFF");
+      const slider = document.getElementById("nivosvjetlosti");
+      const slider2 = document.getElementById("granica");
+      const text = document.getElementById("trenutno");
+      const text2 = document.getElementById("granicalabel");
+
+      function AutomatskaON() {
+        update(ref(db, "rasvjeta/"), {
+          automatski: true,
+        })
+          .then(() => {
+            alert("Automatska rasvjeta uključena");
+          })
+          .catch((error) => {
+            alert("error" + error);
+          });
+      }
+      dugme.addEventListener("click", AutomatskaON, Granica, Load);
+
+      function AutomatskaOFF() {
+        update(ref(db, "rasvjeta/"), {
+          automatski: false,
+        })
+          .then(() => {
+            alert("Automatska rasvjeta isključena");
+          })
+          .catch((error) => {
+            alert("error" + error);
+          });
+      }
+      dugme2.addEventListener("click", AutomatskaOFF, Nivo);
+
+      function Nivo() {
+        update(ref(db, "rasvjeta/"), {
+          nivosvjetlosti: parseInt(slider.value),
+        })
+          .then(() => {
+          })
+          .catch((error) => {
+            alert("error" + error);
+          });
+      }
+      slider.addEventListener("click", Nivo);
+
+      function Ispis() {
+        text2.innerHTML = slider2.value;
+      }
+
+      function Granica() {
+        update(ref(db, "rasvjeta/"), {
+          granica: parseInt(slider2.value),
+        })
+          .then(() => {
+          })
+          .catch((error) => {
+            alert("error" + error);
+          });
+      }
+      slider2.addEventListener("click", Granica);
+      slider2.addEventListener("click", Ispis);
+
+      function Load() {
+        const dbRef = ref(getDatabase());
+        get(child(dbRef, "rasvjeta/"))
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              text.innerHTML = snapshot.val().senzor;
+            } else {
+              console.log("No data available");
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      } 
+      Load();
+      Ispis();
+    </script>
+  </body>
+</html>
